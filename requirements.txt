@@ -1,0 +1,9 @@
+# --- Data collection ---
+requests==2.34.2
+pybaseball==2.2.7
+
+# --- Database ---
+sqlalchemy==2.0.51
+alembic==1.18.5
+psycopg2-binary==2.9.12
+python-dotenv==1.2.2

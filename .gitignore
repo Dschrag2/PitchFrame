@@ -1,0 +1,36 @@
+# --- Secrets ---
+.env
+*.env.local
+configs/secrets.*
+
+# --- Data (don't commit raw pulls or large processed files) ---
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+
+# --- Models (large binary artifacts; consider Git LFS or cloud storage instead) ---
+*.pkl
+*.joblib
+*.h5
+models/*.bin
+
+# --- Web / Node ---
+node_modules/
+.next/
+dist/
+build/
+
+# --- OS / editor ---
+.DS_Store
+.vscode/
+.idea/
