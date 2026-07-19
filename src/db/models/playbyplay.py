@@ -93,9 +93,9 @@ class Pitch(Base):
             ["events.game_id", "events.at_bat_index", "events.event_index"],
             ondelete="CASCADE",
         ),
-        CheckConstraint("balls BETWEEN 0 AND 3", name="ck_pitches_balls_range"),
-        CheckConstraint("strikes BETWEEN 0 AND 2", name="ck_pitches_strikes_range"),
-        CheckConstraint("outs BETWEEN 0 AND 2", name="ck_pitches_outs_range"),
+        CheckConstraint("balls BETWEEN 0 AND 5", name="ck_pitches_balls_range"),
+        CheckConstraint("strikes BETWEEN 0 AND 3", name="ck_pitches_strikes_range"),
+        CheckConstraint("outs BETWEEN 0 AND 3", name="ck_pitches_outs_range"),
         Index("ix_pitches_batter_pitcher", "batter_id", "pitcher_id"),
         Index("ix_pitches_pitcher_batter", "pitcher_id", "batter_id"),
         UniqueConstraint("play_id"),
@@ -191,11 +191,12 @@ class BaserunningEvent(Base):
     runner_id: Mapped[int] = mapped_column(
         ForeignKey("players.id", ondelete="RESTRICT"), primary_key=True
     )
+    movement_index: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
 
-    origin_base: Mapped[Optional[str]] = mapped_column(String(2))
-    start_base: Mapped[Optional[str]] = mapped_column(String(2))
-    end_base: Mapped[Optional[str]] = mapped_column(String(2))
-    out_base: Mapped[Optional[str]] = mapped_column(String(2))
+    origin_base: Mapped[Optional[str]] = mapped_column(String(10))
+    start_base: Mapped[Optional[str]] = mapped_column(String(10))
+    end_base: Mapped[Optional[str]] = mapped_column(String(10))
+    out_base: Mapped[Optional[str]] = mapped_column(String(10))
     is_out: Mapped[bool] = mapped_column(default=False)
     out_number: Mapped[Optional[int]] = mapped_column(SmallInteger)
     movement_reason: Mapped[Optional[str]]
@@ -212,12 +213,13 @@ class BaserunningEventCredit(Base):
     __tablename__ = "baserunning_event_credits"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["game_id", "at_bat_index", "event_index", "runner_id"],
+            ["game_id", "at_bat_index", "event_index", "runner_id", "movement_index"],
             [
                 "baserunning_events.game_id",
                 "baserunning_events.at_bat_index",
                 "baserunning_events.event_index",
                 "baserunning_events.runner_id",
+                "baserunning_events.movement_index",
             ],
             ondelete="CASCADE",
         ),
@@ -227,6 +229,7 @@ class BaserunningEventCredit(Base):
     at_bat_index: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
     event_index: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
     runner_id: Mapped[int] = mapped_column(primary_key=True)
+    movement_index: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
     credit_index: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
 
     player_id: Mapped[int] = mapped_column(ForeignKey("players.id", ondelete="RESTRICT"))

@@ -82,6 +82,29 @@ def get_live_feed(game_pk: int) -> dict:
     return resp.json()
 
 
+def get_venue(venue_id: int) -> dict:
+    """Fetch full venue details (location, field dimensions, timezone) for a single venue."""
+    params = {"hydrate": "location,fieldInfo,timezone"}
+    resp = requests.get(f"{BASE_URL}/venues/{venue_id}", params=params, timeout=30)
+    resp.raise_for_status()
+    venues = resp.json().get("venues", [])
+    return venues[0] if venues else {}
+
+
+def fetch_venues(games: list[dict], sleep: float) -> list[dict]:
+    """Fetch full details for every unique venue referenced across a list of games."""
+    venue_ids = sorted({game["venue"]["id"] for game in games if "venue" in game})
+    venues = []
+    for i, venue_id in enumerate(venue_ids, start=1):
+        print(f"[{i}/{len(venue_ids)}] Fetching venue {venue_id}")
+        try:
+            venues.append(get_venue(venue_id))
+        except requests.exceptions.RequestException as e:
+            print(f"  Failed venue {venue_id}: {e}")
+        time.sleep(sleep)
+    return venues
+
+
 def save_json(obj: dict | list, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
@@ -147,6 +170,11 @@ def main():
         help="Also fetch the play-by-play live feed for each game (one request per game)",
     )
     parser.add_argument(
+        "--with-venues",
+        action="store_true",
+        help="Also fetch full venue details (location, field dimensions) for every unique venue in the schedule",
+    )
+    parser.add_argument(
         "--overwrite",
         action="store_true",
         help="Re-fetch and overwrite files that already exist on disk (default: skip them)",
@@ -177,6 +205,15 @@ def main():
             with_boxscores=args.with_boxscores,
             with_play_by_play=args.with_play_by_play,
         )
+
+    if args.with_venues:
+        venues_path = out_dir / "venues.json"
+        if venues_path.exists() and not args.overwrite:
+            print("venues.json already exists, skipping")
+        else:
+            venues = fetch_venues(games, sleep=args.sleep)
+            print(f"Fetched details for {len(venues)} venues")
+            save_json(venues, venues_path)
 
     print("Done.")
 
