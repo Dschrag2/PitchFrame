@@ -10,7 +10,7 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import games, players, teams
+from routers import games, leaderboards, matchups, players, teams
 
 app = FastAPI(title="PitchFrame API")
 
@@ -24,6 +24,8 @@ app.add_middleware(
 app.include_router(games.router)
 app.include_router(teams.router)
 app.include_router(players.router)
+app.include_router(matchups.router)
+app.include_router(leaderboards.router)
 
 
 @app.get("/")
