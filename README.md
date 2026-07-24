@@ -20,13 +20,13 @@ PitchFrame is a full-stack data science platform for exploring MLB data. It pipe
 | Data collection | Done — MLB Stats API client for schedules, boxscores, venues, and full play-by-play |
 | Database schema | Done — 12-table Postgres schema, fully migrated |
 | Loading pipeline | Done — full 2025 season loaded end-to-end into Postgres |
-| Web backend | In progress — FastAPI serving games, teams, players, and boxscore/season-stat endpoints |
-| Web frontend | In progress — Next.js app with a games list and full boxscore page |
+| Web backend | In progress — FastAPI serving games, teams, players, boxscores, leaderboards, and BvP matchup endpoints |
+| Web frontend | In progress — Next.js app with games, boxscore, leaderboard, and player pages, styled with real team colors |
 | ML models | Not started |
 
 A full 2025 MLB season (regular + postseason, ~2,500 games) is loaded end-to-end into a normalized Postgres schema — from official boxscore lines down to individual pitch physics (velocity, spin, release point, break) — via composite keys and foreign-key constraints instead of denormalized JSON blobs. Six materialized views (season, postseason, and career batting/pitching stats) sit on top of the raw data for fast querying. Every schema change is a version-controlled Alembic migration, and Postgres runs in Docker Compose for a reproducible local setup.
 
-A FastAPI backend exposes that data — game lists and boxscores, team info, and player search with career/season/postseason batting and pitching stats — using Pydantic schemas kept separate from the SQLAlchemy models. A Next.js frontend (TypeScript, Tailwind) consumes it server-side, currently rendering a season game list and a full two-team boxscore view.
+A FastAPI backend exposes that data — game lists and boxscores, team rosters, player search with career/season/postseason batting and pitching stats, batter-vs-pitcher matchups, and stat leaderboards — using Pydantic schemas kept separate from the SQLAlchemy models. A Next.js frontend (TypeScript, Tailwind) consumes it server-side, with a shared component library (`Card`, `StatTable`, `TeamBadge`) and a real MLB team-color lookup driving a consistent look across the games list, boxscore, leaderboard, and player pages. A header with live player search sits on every page.
 
 ## Project structure
 
@@ -47,9 +47,11 @@ src/
 alembic/               # versioned schema migrations
 web/
   backend/            # FastAPI app (reuses src/db directly, no duplicated models)
-    routers/           # games, teams, players endpoints
+    routers/           # games, teams, players, matchups, leaderboards endpoints
     schemas/            # Pydantic response models
   frontend/           # Next.js app (App Router, TypeScript, Tailwind)
-    src/app/            # pages: games list, game boxscore
+    src/app/            # pages: games list, boxscore, leaderboards, player detail
+    src/components/       # shared UI: Card, StatTable, TeamBadge, Header
     src/lib/api.ts        # typed API client
+    src/lib/team-colors.ts # MLB team id -> brand color lookup
 ```
